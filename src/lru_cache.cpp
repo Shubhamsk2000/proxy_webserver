@@ -30,6 +30,7 @@ void LRUCache::putNode(const std::string& key, const std::string& value){
         cacheList.splice(cacheList.begin(), cacheList, it->second);
         return;
     }
+    //TODO- list is pair
     cacheList.emplace_front(key, value);
     cacheMap[key] = cacheList.begin();
 

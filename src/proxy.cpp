@@ -9,26 +9,31 @@
 
 int connectToHost(const std::string& host, int port);
 
-bool Proxy::forwardRequest(int client_fd, const std::string& raw_request, const std::string& host){
+bool Proxy::forwardRequest(int client_fd, const std::string& raw_request, const std::string& host, std::string& response){
     int server_fd = connectToHost(host, 80);
     if(server_fd < 0) return false;
 
+    //testing
+    std::cout<<"\n\n[Test] Sending request from Proxy to Server";
     //sending request from client to real destination server
     if(send(server_fd, raw_request.c_str(), raw_request.size(), 0) < 0){
         perror("send to server");
         close(server_fd);
         return false;
     }
+    std::cout<<"\n[Test] Sent request from Proxy to Server";
 
     char buffer[4096];
 
+    std::cout<<"\n\n[Test] Receiving request from Server to Proxy";
     //recieving and sending response to client again
     while(true){
         int bytes = recv(server_fd, buffer, sizeof(buffer), 0);
         if(bytes <= 0) break;
 
-        send(client_fd, buffer, bytes, 0);
+        response.append(buffer, bytes);
     }
+    std::cout<<"\n[Test] Received request from Server to Proxy\n";
     close(server_fd);
     return true;
 }

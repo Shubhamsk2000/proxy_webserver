@@ -28,7 +28,6 @@ void ClientHandler::handle(int client_fd){
         }
     }
 
-    std::cout << "\n---- HTTP REQUEST START ----\n";
     HttpRequest req;
     if(!HttpParser::parse(request, req)){
         close(client_fd);
@@ -37,13 +36,20 @@ void ClientHandler::handle(int client_fd){
 
     std::string cacheKey = req.method + ":" + req.host + ":" + req.path;
 
-    std::cout << "Cache key stored: " << cacheKey;
+    std::string cachedResponse;
 
-    std::cout << "---- HTTP REQUEST END ----\n";
+    if(cache.getNode(cacheKey, cachedResponse)){
+        std::cout << "Cache HIT: \n";
+        send(client_fd, cachedResponse.c_str(), cachedResponse.size(), 0);
+        close(client_fd);
+        return;
+    }
 
-    std::cout<< "Forwarding request to: "<<req.host<<std::endl;
 
-    if(!Proxy::forwardRequest(client_fd, request, req.host)){
+    std::cout<< "Forwarding request to: "<<req.host<< " from proxy" << std::endl;
+
+    std::string serverResponse;
+    if(!Proxy::forwardRequest(client_fd, request, req.host, serverResponse)){
         const char* error =
             "HTTP/1.1 502 Bad Gateway\r\n"
             "Content-Length: 11\r\n"
@@ -51,5 +57,11 @@ void ClientHandler::handle(int client_fd){
             "Bad Gateway"; 
         
         send(client_fd, error, strlen(error), 0);
+        close(client_fd);
+        return;
     }
+
+    cache.putNode(cachedResponse, serverResponse);
+    std::cout << "Cache key stored: " << cacheKey <<std::endl;
+    send(client_fd, serverResponse.c_str(), serverResponse.size(), 0);
 }

@@ -5,6 +5,6 @@
 
 class Proxy{
     public:
-        static bool forwardRequest(int client_fd, const std::string& raw_reqest, const std::string& host);
+        static bool forwardRequest(int client_fd, const std::string& raw_reqest, const std::string& host, std::string& response);
 };
 #endif
