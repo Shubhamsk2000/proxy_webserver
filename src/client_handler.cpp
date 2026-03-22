@@ -28,6 +28,8 @@ void ClientHandler::handle(int client_fd){
         }
     }
 
+    std::cout<<"------Request comming to Proxy: ------\n"<<request<<std::endl;
+
     HttpRequest req;
     if(!HttpParser::parse(request, req)){
         close(client_fd);
@@ -47,8 +49,8 @@ void ClientHandler::handle(int client_fd){
 
 
     std::cout<< "Forwarding request to: "<<req.host<< " from proxy" << std::endl;
-
     std::string serverResponse;
+
     if(!Proxy::forwardRequest(client_fd, request, req.host, serverResponse)){
         const char* error =
             "HTTP/1.1 502 Bad Gateway\r\n"
