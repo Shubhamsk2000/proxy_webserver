@@ -1,0 +1,14 @@
+# Compiled Objects and Executables
+*.o
+*.out
+proxy_webserver
+
+# Build Directories
+build/
+bin/
+practise/
+
+# IDE specific (optional but helpful)
+.vscode/
+.idea/
+*.swp
