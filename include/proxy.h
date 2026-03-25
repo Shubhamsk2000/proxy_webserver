@@ -1,4 +1,4 @@
-#ifndef PROXY_h
+#ifndef PROXY_H
 #define PROXY_H
 
 #include<string>

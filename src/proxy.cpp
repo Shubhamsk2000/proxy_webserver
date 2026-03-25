@@ -14,27 +14,30 @@ bool Proxy::forwardRequest(int client_fd, std::string& raw_request, const std::s
     int server_fd = connectToHost(host, 80);
     if(server_fd < 0) return false;
 
-    std::string fixed = fixRequestPath(raw_request);
 
     //testing
     std::cout<<"\n[TEST] Sending request from Proxy to Server...";
     //sending request from client to real destination server
-    if(send(server_fd, fixed.c_str(), fixed.size(), 0) < 0){
+    if(send(server_fd, raw_request.c_str(), raw_request.size(), 0) < 0){
         perror("send to server");
         close(server_fd);
         return false;
     }
     std::cout<<"\n[TEST] Sent request from Proxy to Server";
+    std::cout<<"\n[TEST] Receiving request from Server to Proxy...";
 
     char buffer[4096];
 
-    std::cout<<"\n[TEST] Receiving request from Server to Proxy...";
     //recieving and sending response to client again
     while(true){
         int bytes = recv(server_fd, buffer, sizeof(buffer), 0);
         if(bytes <= 0) break;
 
         response.append(buffer, bytes);
+
+        if(response.find("\r\n\r\n") != std::string::npos){
+            break;
+        }
     }
     std::cout<<"\n[TEST] Received request from Server to Proxy\n";
     close(server_fd);
@@ -71,22 +74,4 @@ int connectToHost(const std::string& host, int port){
     }
     freeaddrinfo(res);
     return server_fd;
-}
-
-
-std::string fixRequestPath(std::string& raw_request){
-    std::string modified = raw_request;
-
-    size_t pos = raw_request.find("GET http://");
-    if(pos != std::string::npos){
-        size_t start = modified.find('/', pos + 11);
-        size_t end = modified.find(' ', start);
-        
-        if (start != std::string::npos && end != std::string::npos) {
-            std::string path = modified.substr(start, end - start);
-            modified.replace(pos + 4, end - (pos + 4), path);
-        }
-    }
-    std::cout<<"\nModified path: "<<modified<<std::endl;
-    return modified;
 }

@@ -28,7 +28,7 @@ void ClientHandler::handle(int client_fd){
         }
     }
 
-    std::cout<<"------Request comming to Proxy: ------\n"<<request<<std::endl;
+    std::cout<<"\n\n\n------Request comming to Proxy: ------\n"<<request<<std::endl;
 
     HttpRequest req;
     if(!HttpParser::parse(request, req)){
@@ -63,7 +63,8 @@ void ClientHandler::handle(int client_fd){
         return;
     }
 
-    cache.putNode(cachedResponse, serverResponse);
+    cache.putNode(cacheKey, serverResponse);
     std::cout << "Cache key stored: " << cacheKey <<std::endl;
     send(client_fd, serverResponse.c_str(), serverResponse.size(), 0);
+    close(client_fd);
 }
